@@ -2,7 +2,6 @@ import React from "react";
 import {
   Button,
   Input,
-  CustomInput,
   Form,
   FormGroup,
   Label
@@ -91,7 +90,7 @@ export default class EditLibrary extends React.Component {
             <AutocompletePlace onSelect={this.handleSelect} />
             {" "}<br />
             <Label for="picture">Picture:{" "}</Label>
-            <CustomInput type="file" id="exampleCustomFileBrowser" name="picture" onChange={this.handleFileChange}/>
+            <Input type="file" id="exampleCustomFileBrowser" name="picture" onChange={this.handleFileChange}/>
             {" "}<br />
             <Label for="description">Description:{" "}</Label>
             <Input type="text" value={this.state.description} name="description" cols="20" rows="5" onChange={this.handleInputChange}

@@ -9,18 +9,18 @@ import './../../index.scss';
 const items = [
   {
      src: '../../../images/carousel-joaquim.jpg',
-     altText: `"What an amazing app! Now I can share my books with everyone from my company"`,
-    // caption: 'Slide 1'
+     altText: `"What an amazing app! "`,
+    caption: `"What an amazing app! Now I can share my books with everyone from my company"`
   },
   {
     src: '../../../images/carousel-maxence.jpg',
     altText: 'Amazing!',
-    // caption: 'Slide 2'
+    caption: '"What an amazing app!"'
   },
   {
     src: '../../../images/carousel-mostafa.jpg',
     altText: '"Love it!"',
-    // caption: 'Slide 3'
+    caption: '"Love it! Changed my life!"'
   }
 ];
 
@@ -75,7 +75,7 @@ export default class Home extends Component {
           key={item.src}
         >
           <img src={item.src} alt={item.altText} />
-          <CarouselCaption captionText={item.caption} captionHeader={item.caption} />
+          <CarouselCaption captionText={item.caption} captionHeader={item.altText} />
         </CarouselItem>
       );
     });
@@ -83,7 +83,7 @@ export default class Home extends Component {
 
     return (
       <div className="Home">
-        <div className="home-header">
+        <div className="home-header container">
           <div className="SmartShelfLogo">
             <img src="../../../images/Symbol_Negative.svg" alt="logoSymbol" id="symbol"></img>
             <img src="../../../images/Logotype_Negative.svg" alt="logotype" id="logo"></img>
@@ -91,23 +91,23 @@ export default class Home extends Component {
           <Button href="/signup" className="button-home" border-radius="30px" block>Get Started</Button>
         </div>
         <div className="home-features">
-          <div className="features features-1">
+          <div className="features features-1 container mx-auto">
             <FontAwesomeIcon icon={faUsers} size="4x" className="icon"/>
             <h3>Create and share your own library</h3>
             <p>Make your library online and share it with your friends and colleagues. Create a wonderful community of books!</p>
           </div>
-          <div className="features features-2">
+          <div className="features features-2 container mx-auto">
             <FontAwesomeIcon icon={faBookOpen} size="4x" className="icon"/>
             <h3>Keep track of your physical books</h3>
             <p>Register your books easily and efficiently with their ISBN number and add your own review before you borrow them to your friends!</p>
           </div>
-          <div className="features features-3">
+          <div className="features features-3 container mx-auto">
             <FontAwesomeIcon icon={faBookReader} size="4x" className="icon"/>
             <h3>Find and contribute to other libraries</h3>
             <p>Search for available libraries nearby you can borrow books from... And ask to be a part of them!</p>
           </div>
           <Link to='/find-libraries'>
-          <div className="home-location">
+          <div className="home-location container-fluid">
           {/* <Link to='/find-libraries'> */}
             <FontAwesomeIcon icon={faMapMarkerAlt} size="4x" className="icon"/>
             <h3>Find libraries near you</h3>
@@ -115,7 +115,7 @@ export default class Home extends Component {
           </div>
           </Link>
         </div>
-        <div className="testimonials features">
+        <div className="testimonials features container mx-auto">
           <h2>Our Happy Smart Shelfers</h2>
           <Carousel
               activeIndex={activeIndex}

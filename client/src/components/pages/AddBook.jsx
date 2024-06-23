@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Input, Modal, ModalHeader, ModalBody, Form, FormGroup, Label, CustomInput } from "reactstrap";
+import { Button, Input, Modal, ModalHeader, ModalBody, Form, FormGroup, Label } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 
@@ -203,7 +203,7 @@ export default class AddBook extends Component {
               <FormGroup>
               <Label for="">Picture</Label>
               <img src={this.state.picture} alt={`${this.state.title}-cover`} />
-              <CustomInput
+              <Input
                 type="file"
                 id="exampleCustomFileBrowser"
                 name="picture"

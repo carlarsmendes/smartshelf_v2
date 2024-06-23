@@ -9,16 +9,16 @@ const mongoose = require('mongoose')
 const logger = require('morgan')
 const nocache = require('nocache')
 const session = require("express-session")
-const MongoStore = require('connect-mongo')(session)
+const MongoStore = require('connect-mongo')
 
 require('./configs/database')
 
 const app_name = require('./package.json').name
 const debug = require('debug')(`${app_name}:${path.basename(__filename).split('.')[0]}`)
 
-const app = express()
+const app = express();
 
-app.use(nocache())
+app.use(nocache());
 
 // Set "Access-Control-Allow-Origin" header
 app.use(cors({
@@ -43,18 +43,17 @@ app.use(session({
   secret: process.env.SESSION_SECRET || 'irongenerator',
   resave: true,
   saveUninitialized: true,
-  store: new MongoStore({ mongooseConnection: mongoose.connection })
+  //store: MongoStore.create({ mongooseConnection: mongoose.connection })
+  store:MongoStore.create({mongoUrl:process.env.MONGODB_URI})
 }))
 require('./passport')(app)
 
 
-app.use('/api', require('./routes/index'))
-app.use('/api', require('./routes/auth'))
-app.use('/api/books', require('./routes/books'))
-app.use('/api/libraries', require('./routes/libraries'))
-app.use('/api/members', require('./routes/members'))
-
-
+app.use('/api', require('./routes/index'));
+app.use('/api', require('./routes/auth'));
+app.use('/api/books', require('./routes/books'));
+app.use('/api/libraries', require('./routes/libraries'));
+app.use('/api/members', require('./routes/members'));
 
 
 // For any routes that starts with "/api", catch 404 and forward to error handler

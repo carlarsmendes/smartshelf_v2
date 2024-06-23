@@ -17,10 +17,12 @@ require('../configs/database')
 let users = [
   {
     email: "alice",
+    username: "alicers",
     password: bcrypt.hashSync("alice", bcrypt.genSaltSync(bcryptSalt)),
   },
   {
     email: "bob",
+    username: "bobb769",
     password: bcrypt.hashSync("bob", bcrypt.genSaltSync(bcryptSalt)),
   }
 ]
@@ -30,14 +32,14 @@ User.deleteMany()
     return User.create(users)
   })
   .then(usersCreated => {
-    console.log(`${usersCreated.length} users created with the following id:`);
+    console.log(`${usersCreated.length} users created with the following id(s):`);
     console.log(usersCreated.map(u => u._id));
   })
   .then(() => {
     // Close properly the connection to Mongoose
-    mongoose.disconnect()
+    mongoose.disconnect();
   })
   .catch(err => {
-    mongoose.disconnect()
+    mongoose.disconnect();
     throw err
   })

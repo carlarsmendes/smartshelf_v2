@@ -4,7 +4,6 @@ import {
   Input,
   Label,
   FormFeedback,
-  CustomInput,
   Form,
   FormGroup
 } from "reactstrap";
@@ -85,7 +84,7 @@ export default class EditProfile extends React.Component {
             />{" "}</div>}
 
             <Label for="picture">Picture:{" "}</Label>
-            <CustomInput type="file" id="exampleCustomFileBrowser" name="picture" label="Bring that smile on!" onChange={this.handleFileChange}/>
+            <Input type="file" id="exampleCustomFileBrowser" name="picture" label="Bring that smile on!" onChange={this.handleFileChange}/>
             {" "}<br />
             </FormGroup>
             <FormGroup>

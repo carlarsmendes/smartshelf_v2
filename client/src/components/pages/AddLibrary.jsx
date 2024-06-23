@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Button, Input, Form, FormGroup, Label, CustomInput } from "reactstrap";
+import { Button, Input, Form, FormGroup, Label } from "reactstrap";
 import api from "../../api";
 import AutocompletePlace from "../AutocompletePlace"
 
@@ -77,7 +77,7 @@ export default class AddLibrary extends Component {
          </FormGroup>
          <FormGroup>
          <Label for="picture">Picture</Label>
-          <CustomInput
+          <Input
             type="file" 
             id="exampleCustomFileBrowser"
             // value={this.state.picture}

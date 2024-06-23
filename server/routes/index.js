@@ -7,6 +7,19 @@ const User = require("../models/User");
 const uploader = require("../configs/cloudinary");
 const nodemailer = require("nodemailer");
 
+console.log("test");
+/* TEST USER */
+router.get("/test/:userId", (req, res, next) => {
+    console.log("userId",req.params.userId);
+    User.findById(req.params.userId)
+    .then((user) => {
+    res.json({
+      user
+    });
+  });
+});
+
+
 //4- Profile-Page: Show Libraries and Show Books,
 //ONLY LIBRARIES THAT THE USER IS A PART OF
 //only books borrowed by the user
