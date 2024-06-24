@@ -1,61 +1,119 @@
-## IH-smartshelf-project3
-This project was deployed in Heroku: https://ih-smart-shelf.herokuapp.com/
+# IH-smartshelf-project3
 
+## Table of Contents
+- [IH-smartshelf-project3](#ih-smartshelf-project3)
+  - [Table of Contents](#table-of-contents)
+  - [Introduction](#introduction)
+  - [Features](#features)
+  - [Technologies Used](#technologies-used)
+  - [Installation and Setup](#installation-and-setup)
+    - [Prerequisites](#prerequisites)
+    - [Environment Variables](#environment-variables)
+    - [Database Configuration](#database-configuration)
+    - [Running the Application](#running-the-application)
+  - [Testing](#testing)
+  - [Deployment](#deployment)
+  - [Contributing](#contributing)
+  - [Team](#team)
+  - [License](#license)
 
-## Brief Description
+## Introduction
 
-Users are able to create and/or join libraries where they can upload their available books to share them with other members. Once the User joins a library, he is able to add new books, leave reviews with ratings and borrow books, that will be displayed in the profile page, together with all the libraries that he is a member of. 
+SmartShelf is a web application that allows users to create and join libraries, share books, and borrow books from other members. The project was developed as part of the Ironhack Web Development Bootcamp in Lisbon.
 
-Nearby libraries are displayed in a map, where you can see the available books and ask to join it. It is also possible to send invitation trough e-mail so that anyone can join.
+## Features
 
-The goal is to help organize and create a book sharing enviroment in, for example, a workplace, commercial stabilisment or even for personal use. Keeping track of how long someone has been with a book and due dates do return it 
+- Users can create and join libraries
+- Users can upload available books to share with other members  
+- Users can add new books, leave reviews with ratings, and borrow books
+- Nearby libraries are displayed on a map, showing available books
+- Users can send invitations via email to join libraries
 
-This was a project developed in Ironhack Lisbon's web development Bootcamp. It was built by a team of three students: Guilherme Carmona, Natasha Silva e Carla Mendes.
+## Technologies Used
 
-It was built in order to incorporate the learning of module 3 of the curriculum, using the following technologies and tools:
+- MERN Stack - MongoDB, Express.js, React and Node
+- Reactstrap + Bootstrap  
+- Mapbox
+- Nodemailer
+- Google Books API
+- Cloudinary
 
-React
-Reactstrap + Bootstrap
-Node.Js;
-Mapbox;
-Nodemailer;
-MongoDB;
-Express.Js;
-Google Books API -> Which was used to find books in to create a better user experience for user when adding their books to the database.
+## Installation and Setup
 
-This project was made with love, team work and friendship and we are incredibly proud of it.
+### Prerequisites
 
-## Guideline of errors
+- Node.js
+- npm
+- MongoDB Atlas account
 
-### Send the right status code
+### Environment Variables
 
-Your backend API sends some status code at every request. By default, it will send `200`, which means `OK`, everything went fine.
+Create a `.env` file in the `server` directory and add the following variables (You should add your own):
 
-If something bad happened, you should a send a different status code:
-- **`400` Bad Request**: Something is missing in wrong in the request (eg: missing data).
-- **`401` Unauthorized**: For missing or bad authentication.
-- **`403` Forbidden**: When the user is authenticated but isn’t authorized to perform the requested operation on the given resource.
-- **`404` Not Found**: The resources/route doesn't exist.
-- **`409` Conflict**: The request couldn't be completed because of a conflict (eg for signup: email already taken).
-- **`500` Internal Server Error**: The server encountered an unexpected condition which prevented it from fulfilling the request.
-
-By sending the write status code, you will catch more easily your error on the client side.
-
-**Example on the server side**
-```js
-// If the user is not connected for a protected resource, we can send him this
-res.status(401).json({ message: "You must be connected" })
 ```
-**Example on the client side**
-```js
-// Call to api.getSecret()
-//   In case of success, state.secret is saved
-//   In case of error (status code 4xx or 5xx), state.message contains the message from the error
-api.getSecret()
-  .then(data => this.setState({ secret: data.secret }))
-  .catch(err => this.setState({ message: err.toString() }))
+MONGODB_URI=<your_mongodb_atlas_uri>
+SESSION_SECRET=anysessionsecret
+PORT=6000
 ```
 
+Note: Replace `<your_mongodb_atlas_uri>` with the connection string for your MongoDB Atlas cluster, without `<>`.
 
+### Database Configuration
 
-<!-- TODO: find a way to check if we are still loggedIn when we load the application -->
+The application uses MongoDB Atlas as the database. Make sure you have a MongoDB Atlas account and create a new cluster.
+
+### Running the Application
+
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+2. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+   This will start both the client and server in development mode.
+
+## Testing
+
+The application uses Jest and Supertest for testing. To run the tests:
+
+```bash
+cd server
+npm test
+```
+
+This will run the tests in the `tests` folder.
+
+## Deployment
+
+The application is currently not deployed. Once you have set up your deployment environment, you can build the production version of the client:
+
+```bash
+cd client
+npm run build-prod
+```
+
+This will create an optimized production build in the `build` folder.
+
+## Contributing
+
+If you would like to contribute to the project, please follow these steps:
+
+1. Fork the repository
+2. Create a new branch for your feature or bug fix
+3. Make your changes and commit them
+4. Push your changes to your forked repository
+5. Create a pull request to the original repository
+
+## Team
+
+- Guilherme Carmona
+- Natasha Silva
+- Carla Mendes
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
