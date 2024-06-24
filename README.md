@@ -1,7 +1,7 @@
-# IH-smartshelf-project3
+# Smartshelf - Full Stack App
 
 ## Table of Contents
-- [IH-smartshelf-project3](#ih-smartshelf-project3)
+- [Smartshelf - Full Stack App](#smartshelf---full-stack-app)
   - [Table of Contents](#table-of-contents)
   - [Introduction](#introduction)
   - [Features](#features)
