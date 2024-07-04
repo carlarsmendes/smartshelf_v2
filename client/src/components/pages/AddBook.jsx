@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import { Button, Input, Modal, ModalHeader, ModalBody, Form, FormGroup, Label } from "reactstrap";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
@@ -6,140 +6,149 @@ import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import api from "../../api";
 import axios from "axios";
 
-export default class AddBook extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      title: "",
-      author: "",
-      genre: "",
-      picture: null,
-      pictureUrl: null,
-      description: "",
-      rating: "",
-      pages: "",
-      isbn: "",
-      language: "",
-      message: null,
-      isbn_message: null,
-      modal: false,
-      _library: this.props.match.params.libraryId
-    };
-    this.handleInputChange = this.handleInputChange.bind(this);
-    this.handleFileChange = this.handleFileChange.bind(this);
-    this.toggle = this.toggle.bind(this);
-  }
+import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
-  toggle() {
-    this.setState(prevState => ({
-      modal: !prevState.modal
+const AddBook = ({ props }) => {
+  const [title, setTitle] = useState("");
+  const [author, setAuthor] = useState("");
+  const [genre, setGenre] = useState("");
+  const [picture, setPicture] = useState(null);
+  const [pictureUrl, setpictureUrl] = useState(null);
+  const [description, setDescription] = useState("");
+  const [rating, setRating] = useState("");
+  const [pages, setPages] = useState("");
+  const [isbn, setIsbn] = useState("");
+  const [language, setLanguage] = useState("");
+  const [message, setMessage] = useState(null);
+  const [isbnMessage, setIsbnMessage] = useState(null);
+  const [modal, setModal] = useState(false);
+
+  const { libraryId } = useParams();
+  const navigate = useNavigate();
+
+
+  const toggle = () => {
+    setModal(() => ({
+      modal: !modal
     }));
   }
 
-  handleInputChange(e) {
+  const handleInputChange = (e) => {
     this.setState({
       [e.target.name]: e.target.value
     });
   }
 
-  handleFileChange(e) {
+  const handleFileChange = (e) => {
     this.setState({
       picture: e.target.files[0]
     });
   }
 
-  getInfoFromApi(e) {
+  const getInfoFromApi = (e) => {
     e.preventDefault();
     axios
       .get(
-        `https://www.googleapis.com/books/v1/volumes?q=isbn:${this.state.isbn}`
+        `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}`
       )
       .then(response => {
+        const data = response.data.items[0].volumeInfo;
         this.setState({
-          title: response.data.items[0].volumeInfo.title,
-          author: response.data.items[0].volumeInfo.authors[0],
-          genre: response.data.items[0].volumeInfo.categories
-            ? response.data.items[0].volumeInfo.categories[0]
+          title: data.title,
+          author: data.authors[0],
+          genre: data.categories
+            ? data.categories[0]
             : '',
-          picture: response.data.items[0].volumeInfo.imageLinks
-            ? response.data.items[0].volumeInfo.imageLinks.thumbnail
+          picture: data.imageLinks
+            ? data.imageLinks.thumbnail
             : '/images/book-cover-placeholder.jpg',
-          description: response.data.items[0].volumeInfo.description ? response.data.items[0].volumeInfo.description : '',
-          rating: response.data.items[0].volumeInfo.averageRating ? response.data.items[0].volumeInfo.averageRating : '',
-          pages: response.data.items[0].volumeInfo.pageCount ? response.data.items[0].volumeInfo.pageCount : '',
-          language: response.data.items[0].volumeInfo.language ? response.data.items[0].volumeInfo.language : '',
+          description: data.description ? data.description : '',
+          rating: data.averageRating ? data.averageRating : '',
+          pages: data.pageCount ? data.pageCount : '',
+          language: data.language ? data.language : '',
           isbn:
-            response.data.items[0].volumeInfo.industryIdentifiers ? response.data.items[0].volumeInfo.industryIdentifiers[1].identifier : '',
+            data.industryIdentifiers ? data.industryIdentifiers[1].identifier : '',
           isbn_message: `Your book's name is ${
-            response.data.items[0].volumeInfo.title
+            data.title
           }. If this information is wrong, fill in the form below with the correct information`,
-          _library: `ObjectId(${this.props.match.params.libraryId})`
+          _library: `ObjectId(${libraryId})`
         });
       })
       .catch(err => {
         console.log(err)
         this.setState({
-          isbn_message:
+          isbnMessage:
             `We do not have this book in our database. Please fill the form`
         })}
       );
     // ).catch(err => this.setState({ message: err.toString() }))
   }
 
-  addBookAndRedirectToLibraryPage(e) {
+  const addBookAndRedirectToLibraryPage = (e) => {
     const uploadData = new FormData();
-    uploadData.append("title", this.state.title);
-    uploadData.append("author", this.state.author);
-    uploadData.append("picture", this.state.picture);
-    uploadData.append("genre", this.state.genre);
-    uploadData.append("description", this.state.description);
-    uploadData.append("rating", this.state.rating);
-    uploadData.append("pages", this.state.pages);
-    uploadData.append("language", this.state.language);
-    uploadData.append("isbn", this.state.isbn);
-    uploadData.append("_library", this.props.match.params.libraryId);
-
+    uploadData.append("title", title);
+    uploadData.append("author", author);
+    uploadData.append("picture", picture);
+    uploadData.append("genre", genre);
+    uploadData.append("description", description);
+    uploadData.append("rating", rating);
+    uploadData.append("pages", pages);
+    uploadData.append("language", language);
+    uploadData.append("isbn", isbn);
+    uploadData.append("_library", libraryId);
+    
     api
       .addBookWithForm(uploadData)
       .then(result => {
-        this.setState({
-          message: `Your book '${this.state.title}' has been created`
+        setTitle(result.title);
+        setPicture(result.picture);
+        setGenre(result.genre);
+        setDescription(result.description);
+        setRating(result.rating);
+        setPages(result.pages);
+        setLanguage(result.language);
+        setIsbn(result.isbn);
+        setMessage();
+        setMessage({
+          message: `Your book '${title}' has been created`
         });
 
         setTimeout(() => {
-          this.setState({
+          setMessage({
             message: null
           });
-          this.props.history.push("/libraries/"+this.props.match.params.libraryId)
+         // this.props.history.push("/libraries/"+this.props.match.params.libraryId);
+          navigate("/libraries/"+libraryId);
         }, 2000);
       })
-      .catch(err => this.setState({ message: err.toString() }));
+      .catch(err => setMessage({ message: err.toString() }));
   }
 
-  render() {
+  useEffect(()=>{
+    window.scrollTo(0, 0);
+  }, []);
+
+  
     return (
       <div className="AddBook">
       <div className="container">
-        {!this.state._library && (
+        {!libraryId && (
           <div>Loading... This is probably not a valid Library! </div>
         )}
-        {this.state._library && (
+        {libraryId && (
           <div className="AddBook">
             <h2>Add Book</h2>
             <h3>Use ISBN to help us find the information about your book</h3>
 
-    
-              
-
             <Form>
               <FormGroup>
-              <Label for='number'>ISBN{' '}<FontAwesomeIcon onClick={this.toggle} icon={faQuestionCircle} size="1.5x" className="icon" style={{cursor: 'pointer'}} />
+              <Label for='number'>ISBN{' '}<FontAwesomeIcon onClick={toggle} icon={faQuestionCircle} size="1.5x" className="icon" style={{cursor: 'pointer'}} />
               <Modal
-                isOpen={this.state.modal}
-                toggle={this.toggle}
-                className={this.props.className}
+                isOpen={modal}
+                toggle={toggle}
               >
-                <ModalHeader toggle={this.toggle}>What is ISBN?</ModalHeader>
+                <ModalHeader toggle={toggle}>What is ISBN?</ModalHeader>
                 <ModalBody className="modal-body">
                   <img
                     src="../../../images/isbn-location.png"
@@ -154,19 +163,19 @@ export default class AddBook extends Component {
               </Modal></Label>
               <Input
                 type="number"
-                value={this.state.isbn}
+                value={isbn}
                 name="isbn"
-                onChange={this.handleInputChange}
+                onChange={handleInputChange}
               />
               </FormGroup>
-              <Button className="btn-yellow-fill" onClick={e => this.getInfoFromApi(e)}>
+              <Button className="btn-yellow-fill" onClick={e => getInfoFromApi(e)}>
                 Check your book's info
               </Button>{" "}
               <br />
             </Form>
             
-            {this.state.isbn_message && (
-              <div className="info">{this.state.isbn_message}</div>
+            {isbnMessage && (
+              <div className="info">{isbnMessage}</div>
             )}
             <br />
 
@@ -177,97 +186,97 @@ export default class AddBook extends Component {
               <Label for="title">Title</Label>
               <Input
                 type="text"
-                value={this.state.title}
+                value={title}
                 name="title"
-                onChange={this.handleInputChange}
+                onChange={handleInputChange}
               />
               </FormGroup>
               <FormGroup>
               <Label for="author">Author</Label>
               <Input
                 type="text"
-                value={this.state.author}
+                value={author}
                 name="author"
-                onChange={this.handleInputChange}
+                onChange={handleInputChange}
               />
               </FormGroup>
               <FormGroup>
               <Label for="genre">Genre</Label>
               <Input
                 type="text"
-                value={this.state.genre}
+                value={genre}
                 name="genre"
-                onChange={this.handleInputChange}
+                onChange={handleInputChange}
               />
               </FormGroup>
               <FormGroup>
               <Label for="">Picture</Label>
-              <img src={this.state.picture} alt={`${this.state.title}-cover`} />
+              <img src={picture} alt={`${title}-cover`} />
               <Input
                 type="file"
                 id="exampleCustomFileBrowser"
                 name="picture"
-                onChange={this.handleFileChange}
+                onChange={handleFileChange}
               />
               </FormGroup>
               <FormGroup>
               <Label for="rating">Rating</Label>
               <Input
                 type="number"
-                value={this.state.rating}
+                value={rating}
                 name="rating"
-                onChange={this.handleInputChange}
+                onChange={handleInputChange}
               />
               </FormGroup>
               <FormGroup>
               <Label for="pages">Pages</Label>
               <Input
                 type="number"
-                value={this.state.pages}
+                value={pages}
                 name="pages"
-                onChange={this.handleInputChange}
+                onChange={handleInputChange}
               /></FormGroup>
               <FormGroup>
               <Label for="language">Language</Label>
               <Input
                 type="text"
-                value={this.state.language}
+                value={language}
                 name="language"
-                onChange={this.handleInputChange}
+                onChange={handleInputChange}
               />
               </FormGroup>
               <FormGroup>
               <Label for="isbn">ISBN</Label>
               <Input
                 type="number"
-                value={this.state.isbn}
+                value={isbn}
                 name="isbn"
-                onChange={this.handleInputChange}
+                onChange={handleInputChange}
               />
               </FormGroup>
               <FormGroup>
               <Label for="description">Description</Label>
               <Input
                 type="textarea"
-                value={this.state.description}
+                value={description}
                 name="description"
                 cols="20"
                 rows="5"
-                onChange={this.handleInputChange}
+                onChange={handleInputChange}
               />
               </FormGroup>
               <Button
                  className="btn-yellow-fill"
-                onClick={e => this.addBookAndRedirectToLibraryPage(e)}
+                onClick={e => addBookAndRedirectToLibraryPage(e)}
               > Create Book
               </Button>
             </Form>
-            {this.state.message && (
-              <div className="info">{this.state.message}</div>
+            {message && (
+              <div className="info">{message}</div>
             )}
             <Button
                className="btn-yellow-fill"
-              href={`/libraries/${this.props.match.params.libraryId}`}
+              href={`/libraries/${libraryId}`}
             >Go Back
             </Button>
           </div>
@@ -277,7 +286,6 @@ export default class AddBook extends Component {
     );
   }
 
-  componentDidMount() {
-    window.scrollTo(0, 0);
-  }
-}
+  
+
+export default AddBook;

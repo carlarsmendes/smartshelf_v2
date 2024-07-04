@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { useState, useEffect } from 'react';
 import api from "../../api";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash,faMapMarkerAlt } from '@fortawesome/free-solid-svg-icons'
@@ -16,162 +16,168 @@ import {
   Alert
 } from "reactstrap";
 import { NavLink as Nlink } from "react-router-dom";
+import { useLocation } from 'react-router-dom'; // Import useLocation hook
+import { useParams } from 'react-router-dom';
 import EditLibrary from "../EditLibrary.js";
 import DeleteMember from "../DeleteMember";
 
 
+const LibraryDetail = ({ history }) => {
+  const [library, setLibrary] = useState(null);
+  const [book, setBook] = useState(null);
+  const [member, setMember] = useState(null);
+  const [allmembers, setAllMembers] = useState(null);
+  const [profileInfo, setProfileInfo] = useState(null);
+  const [showAlertLeaveLibrary, setShowAlertLeaveLibrary] = useState(false);
+  const [showAlertDeleteLibrary, setShowAlertDeleteLibrary] = useState(false);
+  const [errorMsg, setErrorMsg] = useState(null); // State variable for error message
 
-export default class LibraryDetail extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      response: {
-        library: {},
-        book: []
-      },
-      member: null,
-      allmembers: null,
-      showAlertLeaveLibrary: false,
-      showAlertDeleteLibrary: false,
-      showAlertDeleteMember: false,
-      profileInfo: null
+  const location = useLocation(); // Get location object to check for match
+  const [isLoading, setIsLoading] = useState(true);
+  const { libraryId } = useParams(); // Destructure libraryId from useParams
 
-    };
-        this.toggleAlertLeaveLibrary = this.toggleAlertLeaveLibrary.bind(this);
-        this.toggleAlertDeleteLibrary = this.toggleAlertDeleteLibrary.bind(this);
-        this.toggleAlertDeleteMember = this.toggleAlertDeleteMember.bind(this);
 
-      }
-      toggleAlertLeaveLibrary() {
-        this.setState({ 
-          showAlertLeaveLibrary: !this.state.showAlertLeaveLibrary,
-        })
-      }
-      toggleAlertDeleteLibrary() {
-        this.setState({ 
-          showAlertDeleteLibrary: !this.state.showAlertDeleteLibrary,
-        })
-      }
-      toggleAlertDeleteMember() {
-        this.setState({ 
-          showAlertDeleteMember: !this.state.showAlertDeleteMember,
-        })
-      }
+      const toggleAlertLeaveLibrary = () => {
+        setShowAlertLeaveLibrary(!showAlertLeaveLibrary);
+      };
+
+      const toggleAlertDeleteLibrary = () => {
+        setShowAlertDeleteLibrary(!showAlertDeleteLibrary);
+      };
+
+
 // ---------- METHOD TO THE USER BECOME A MEMBER OF THE LIBRARY
-  joinLibrary(event) {
-    event.preventDefault();
-    api
-      .createMember(this.props.match.params.libraryId)
-      .then(result => {
-        this.setState({
-          message: `Your book '${this.state.title}' has been created`,
-          member: result
-        });
-        setTimeout(() => {
-          this.setState({
-            message: null
-          });
-        }, 2000);
-      })
-      .catch(err => this.setState({ message: err.toString() }));
-  }
-  updateLibrary = () => {
-    api
-      .getLibrary(this.props.match.params.libraryId)
-      .then(response => {
-        this.setState({
-          library: response.library
-        });
-      })
-      .catch(err => console.log(err))
-    }
-  //  ---------- METHOD TO LEAVE LIBRARY  -------------------
+const joinLibrary = (event) => {
+  event.preventDefault();
+  api
+    .createMember(libraryId)
+    .then(result => {
+      setMember(result);
+      setTimeout(() => setMember(null), 2000); // Assuming message display time is 2 seconds
+    })
+    .catch(err => console.error(err));
+};
 
-  leaveLibrary() {
-    api.deleteMember(this.state.member._id, this.props.match.params.libraryId)
+const updateLibrary = () => {
+  api
+    .getLibrary(libraryId)
     .then(response => {
-      api.getLibrary(this.props.match.params.libraryId)
-       .then(response => {
-         this.setState({
-           library: response.library,
-           book: response.book,
-         })
-         api.getMember(this.props.match.params.libraryId)
-           .then(memberInfo => {
-             this.setState({
-               member: memberInfo[0]
-          })
-          this.toggleAlertLeaveLibrary()
-        })     
-      })
+      setLibrary(response.library);
     })
-  }
+    .catch(err => console.log(err));
+};
 
-  deleteLibrary() {
-    api.deleteLibrary(this.props.match.params.libraryId)
-      .then(response => {
-        this.props.history.push('/profile')
-      })
-      .catch(err => console.log(err))      
-  }
-  handleDeleteMember(indexToRemove) {
-    this.setState({
-      allmembers: this.state.allmembers.filter((member,i) => i !== indexToRemove)
+const leaveLibrary = () => {
+  api.deleteMember(member._id, libraryId)
+    .then(() =>
+      Promise.all([
+        api.getLibrary(libraryId),
+        api.getMember(libraryId)
+      ])
+    )
+    .then(([response, memberInfo]) => {
+      setLibrary(response.library);
+      setBook(response.book);
+      setMember(memberInfo[0]);
+      toggleAlertLeaveLibrary();
     })
-  }
+    .catch(err => console.error(err));
+};
+
+const deleteLibrary = () => {
+  api.deleteLibrary(libraryId)
+    .then(() => history.push('/profile'))
+    .catch(err => console.error(err));
+};
+
+const handleDeleteMember = (indexToRemove) => {
+  setAllMembers(allmembers.filter((member, i) => i !== indexToRemove));
+};
+
+useEffect(() => {
+  console.log("location.pathname",location.pathname);
+  if (location.pathname.includes(`/libraries/`)) { //// Check for library route pattern
+  const fetchData = async () => {
+    try {
+      const response = await api.getLibrary(libraryId);
+      setLibrary(response.library);
+      setBook(response.book);
+
+      const [memberInfo, allmembersData, profileData] = await Promise.all([
+        api.getMember(libraryId),
+        api.getAllMember(libraryId),
+        api.showProfile()
+      ]);
+
+      setMember(memberInfo[0]);
+      setAllMembers(allmembersData);
+      setProfileInfo(profileData);
+    } catch (err) {
+      console.error(err);
+      setErrorMsg(err.message || 'An error occurred while fetching library details.'); // Set user-friendly error message
+    } finally {
+      setIsLoading(false);
+      window.scrollTo(0, 0);
+    }
+  };
+
+  fetchData();
+}
+}, [location, libraryId]); // Dependency array to trigger effect on libraryId change
 
 // ----------------------
-  render() {
+  
     return (
       <div className="LibraryDetail">
-        {!this.state.library  &&  <div>Loading...</div>}
-        {this.state.library && 
+      {errorMsg && <div className="info">{errorMsg}</div>} {/* Display error message if error exists */}
+        {!library  && isLoading && <div>Loading...</div>}
+        {library && 
         <div className="libraryCard">
-        <img src={this.state.library.picture} alt="library-img" className="library-pic" />
+        <img src={library.picture} alt="library-img" className="library-pic" />
           <Card>
-            {/* <CardImg top width="100%" src={this.state.library.picture} alt="Card image cap" className="library-pic" /> */}
+            {/* <CardImg top width="100%" src={library.picture} alt="Card image cap" className="library-pic" /> */}
             <CardBody>
-              <CardTitle><b>{this.state.library.name}</b></CardTitle>
+              <CardTitle><b>{library.name}</b></CardTitle>
               <CardSubtitle>
               <FontAwesomeIcon icon={faMapMarkerAlt} size="1x" className="icon"/>{' '}
-              {this.state.library.address}</CardSubtitle>
-              <CardText>{this.state.library.description}</CardText>
+              {library.address}</CardSubtitle>
+              <CardText>{library.description}</CardText>
 
-            {this.state.member && (
-              <Button href={`/send-invitation/${this.state.library._id}`} className="send-invitation-btn">
+            {member && (
+              <Button href={`/send-invitation/${library._id}`} className="send-invitation-btn">
                 Send Invitation
               </Button>
             )}
 
-              {this.state.member && this.state.member.role === "admin" && <Button onClick={this.toggleAlertDeleteLibrary} className="delete-libr-btn">
+              {member && member.role === "admin" && <Button onClick={toggleAlertDeleteLibrary} className="delete-libr-btn">
               <FontAwesomeIcon icon={faTrash} size="1x" className="icon"/>{' '}
                 Delete Library</Button>}
-              <Alert color="info" isOpen={this.state.showAlertDeleteLibrary} toggle={this.toggleAlertDeleteLibrary}>
+              <Alert color="info" isOpen={showAlertDeleteLibrary} toggle={toggleAlertDeleteLibrary}>
                 Are you sure you want to delete this library? <br />
-                  <Button onClick={(e) => this.deleteLibrary(e)} className="send-invitation-btn">Delete!</Button>  
-                  <Button onClick={this.toggleAlertDeleteLibrary} className="send-invitation-btn">No!</Button>     
+                  <Button onClick={(e) => deleteLibrary(e)} className="send-invitation-btn">Delete!</Button>  
+                  <Button onClick={toggleAlertDeleteLibrary} className="send-invitation-btn">No!</Button>     
                 </Alert>
               
-              {!this.state.member && <Button onClick={(e) => this.joinLibrary(e)} className="send-invitation-btn">Join</Button>}
-              {this.state.member && this.state.member.role === "member" && <Button onClick={this.toggleAlertLeaveLibrary} className="delete-libr-btn">Leave</Button>}
-              <Alert color="info" isOpen={this.state.showAlertLeaveLibrary} toggle={this.toggleAlertLeaveLibrary}>
+              {!member && <Button onClick={(e) => joinLibrary(e)} className="send-invitation-btn">Join</Button>}
+              {member && member.role === "member" && <Button onClick={toggleAlertLeaveLibrary} className="delete-libr-btn">Leave</Button>}
+              <Alert color="info" isOpen={showAlertLeaveLibrary} toggle={toggleAlertLeaveLibrary}>
               Are you sure you want to leave this library? <br />
-                  <Button onClick={(e) => this.leaveLibrary(e)} className="delete-libr-btn">Leave!</Button>  
-                  <Button onClick={this.toggleAlertLeaveLibrary} className="send-invitation-btn">Stay!</Button>     
+                  <Button onClick={(e) => leaveLibrary(e)} className="delete-libr-btn">Leave!</Button>  
+                  <Button onClick={toggleAlertLeaveLibrary} className="send-invitation-btn">Stay!</Button>     
                 </Alert>
 
             </CardBody>
           
-            {this.state.member && this.state.member.role === "admin" &&  
-            <EditLibrary updateLibrary={this.updateLibrary} theLibrary={this.state.library} />}
+            {member && member.role === "admin" &&  
+            <EditLibrary updateLibrary={updateLibrary} theLibrary={library} />}
           </Card>
         </div>
       }
         <h3>Library Books</h3>
-        {!this.state.book && <div>Loading...</div>}
+        {!book && <div>Loading...</div>}
         
-        {this.state.book && this.state.book.length > 0 ? 
-        this.state.book.slice(0, 2).map((booksFromLibrary, i) => (
+        {book && book.length > 0 ? 
+        book.slice(0, 2).map((booksFromLibrary, i) => (
           <div key={booksFromLibrary._id}>
             <Card>
             <CardBody>
@@ -212,18 +218,19 @@ export default class LibraryDetail extends Component {
           </Card>
     </div>}
     
-        {this.state.book && this.state.book.length > 0 && 
-        <Button className="send-invitation-btn" outline color="info" size="sm" tag={Nlink} to={`/${this.props.match.params.libraryId}/books`}>
+        {book && book.length > 0 && !isLoading && location.pathname.includes(`/libraries/`) &&
+        <Button className="send-invitation-btn" outline color="info" size="sm" tag={Nlink} to={`/${libraryId}/books`}>
           {" "}
           See all Books
         </Button>}
-        <Button className="send-invitation-btn" outline color="info" size="sm" tag={Nlink} to={`/${this.props.match.params.libraryId}/add-book`}>
+        { location.pathname.includes(`/libraries/`) &&
+        <Button className="send-invitation-btn" outline color="info" size="sm" tag={Nlink} to={`/${libraryId}/add-book`}>
           {" "}
           Add new Book
-        </Button>
+        </Button>}
         <div className="memberList">
         <h3>Members</h3>
-        {this.state.allmembers && this.state.allmembers.map((members,i) => (<div key={members._id}>
+        {allmembers && allmembers.map((members,i) => (<div key={members._id}>
              <Card>
              <CardBody>
               <Row>
@@ -235,10 +242,10 @@ export default class LibraryDetail extends Component {
                     <CardTitle><b>{members._user.username[0].toUpperCase()+members._user.username.substr(1)}</b></CardTitle>
                     <CardText className="small">"<i>{members._user.favoriteQuote}</i>"</CardText>
                     {/* <Button size="sm" tag={Nlink}to={`/profile/${members._user._id}`}  className="send-invitation-btn small">See details</Button> */}
-                    {this.state.member && 
-                    this.state.member.role === "admin" && 
-                    members._user._id !== this.state.profileInfo.user._id &&                    
-                      <DeleteMember onDelete={() => this.handleDeleteMember(i)} memberToBeDeletedId={members._id} theLibrary={this.state.library}/>}
+                    {member && 
+                    member.role === "admin" && 
+                    members._user._id !== profileInfo.user._id &&                    
+                      <DeleteMember onDelete={() => handleDeleteMember(i)} memberToBeDeletedId={members._id} theLibrary={library}/>}
                  
                   </Col>
                 </Row>
@@ -249,28 +256,7 @@ export default class LibraryDetail extends Component {
        
       </div>
     );
-  }
+  };
+
+  export default LibraryDetail;
   
-  componentDidMount() {
-     api.getLibrary(this.props.match.params.libraryId)
-       .then(response => {
-         this.setState({
-           library: response.library,
-           book: response.book,
-         })
-      Promise.all([
-          api.getMember(this.props.match.params.libraryId),
-          api.getAllMember(this.props.match.params.libraryId),
-          api.showProfile()
-        ]).then(([memberInfo,allmembers,profileInfo]) => {
-             this.setState({
-               member: memberInfo[0],
-               allmembers: allmembers,
-               profileInfo: profileInfo
-          })
-        })
-        window.scrollTo(0, 0);     
-      })
-      .catch(err => console.log(err));
-  }
-}

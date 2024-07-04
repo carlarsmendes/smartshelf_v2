@@ -1,112 +1,97 @@
-import React, { Component } from "react";
-import { Button, Input, Form, FormGroup, Label } from "reactstrap";
-import api from "../../api";
-import AutocompletePlace from "../AutocompletePlace"
+import React, { useState } from 'react';
+import { Button, Input, Form, FormGroup, Label } from 'reactstrap';
+import api from '../../api';
+import AutocompletePlace from '../AutocompletePlace';
+import { useNavigate } from 'react-router-dom';
 
-export default class AddLibrary extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      name: "",
-      picture: null,
-      address: "",
-      description: "",
-      message: null
-    };
-    this.handleInputChange = this.handleInputChange.bind(this);
-    this.handleFileChange = this.handleFileChange.bind(this);
-    this.handleSelect = this.handleSelect.bind(this)
+const AddLibrary = () => {
+  const [name, setName] = useState('');
+  const [picture, setPicture] = useState(null);
+  const [place, setPlace] = useState(null);
+  const [description, setDescription] = useState('');
+  const [message, setMessage] = useState(null);
+  const navigate = useNavigate();
 
-    //this.addLibraryAndRedirectToProfile = this.addLibraryAndRedirectToProfile.bind(this);
-  }
-  handleSelect(place) {
-    this.setState({ place })
-  }
-  handleInputChange(e) {
-    this.setState({
-      [e.target.name]: e.target.value
-    });
-  }
-
-  handleFileChange(event) {
-    //  event.preventDefault();
-    this.setState({
-      picture: event.target.files[0]
-    });
-  }
-
-    addLibraryAndRedirectToProfile(e){
-      // To send information with "form-data" (like in Postman)
-      const uploadData = new FormData()
-      uploadData.append("name", this.state.name)
-      uploadData.append("picture", this.state.picture)
-      uploadData.append("address", this.state.place.place_name)
-      uploadData.append("coordinates_lng", this.state.place.center[0])
-      uploadData.append("coordinates_lat", this.state.place.center[1])
-      uploadData.append("description", this.state.description)
-  
-      api.createLibrary(uploadData)
-      .then(createdLibrary => {
-        this.setState({
-          message: `Your library '${this.state.name}' has been created`
-        });
-        this.props.history.push('/profile')
-        setTimeout(() => {
-          this.setState({
-            message: null
-          });
-        }, 2000);
-      })
-      .catch(err => this.setState({ message: err.toString() }));
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    switch (name) {
+      case 'name':
+        setName(value);
+        break;
+      case 'description':
+        setDescription(value);
+        break;
+      default:
+        break;
     }
+  };
 
-  render() {
-    return (
-      <div className="AddLibrary">
+  const handleFileChange = (event) => {
+    setPicture(event.target.files[0]);
+  };
+
+  const handleSelect = (selectedPlace) => {
+    setPlace(selectedPlace);
+  };
+
+  const addLibraryAndRedirectToProfile = async (e) => {
+    e.preventDefault();
+    const uploadData = new FormData();
+    uploadData.append('name', name);
+    uploadData.append('picture', picture);
+    uploadData.append('address', place.place_name);
+    uploadData.append('coordinates_lng', place.center[0]);
+    uploadData.append('coordinates_lat', place.center[1]);
+    uploadData.append('description', description);
+
+    try {
+      await api.createLibrary(uploadData);
+      setMessage(`Your library '${name}' has been created`);
+      navigate('/profile');
+      setTimeout(() => {
+        setMessage(null);
+      }, 2000);
+    } catch (err) {
+      setMessage(err.toString());
+    }
+  };
+
+  return (
+    <div className="AddLibrary">
       <div className="container">
         <h2>Add Library</h2>
         <Form>
-        <FormGroup>
-        <Label for="name">Name</Label>
-          <Input
-            type="text"
-            value={this.state.name}
-            name="name"
-            onChange={this.handleInputChange}
-          />
-         </FormGroup>
-         <FormGroup>
-         <Label for="picture">Picture</Label>
-          <Input
-            type="file" 
-            id="exampleCustomFileBrowser"
-            // value={this.state.picture}
-            name="picture"
-            onChange={this.handleFileChange}
-          />
+          <FormGroup>
+            <Label for="name">Name</Label>
+            <Input type="text" value={name} name="name" onChange={handleInputChange} />
           </FormGroup>
           <FormGroup>
-          <Label for="address">Address</Label>
-          <AutocompletePlace onSelect={this.handleSelect} />
+            <Label for="picture">Picture</Label>
+            <Input type="file" id="exampleCustomFileBrowser" name="picture" onChange={handleFileChange} />
           </FormGroup>
           <FormGroup>
-          <Label for="description">Description</Label>
-          <Input
-            type="textarea"
-            value={this.state.description}
-            name="description"
-            cols="20"
-            rows="5"
-            onChange={this.handleInputChange}
-          />
+            <Label for="address">Address</Label>
+            <AutocompletePlace onSelect={handleSelect} />
           </FormGroup>
-          <Button color="primary" className="btn-yellow-fill" onClick={e => this.addLibraryAndRedirectToProfile(e)}>
+          <FormGroup>
+            <Label for="description">Description</Label>
+            <Input
+              type="textarea"
+              value={description}
+              name="description"
+              cols="20"
+              rows="5"
+              onChange={handleInputChange}
+            />
+          </FormGroup>
+          <Button color="primary" className="btn-yellow-fill" onClick={addLibraryAndRedirectToProfile}>
             Create Library
           </Button>
         </Form>
-        {this.state.message && <div className="info">{this.state.message}</div>}
-        </div>
+        {message && <div className="info">{message}</div>}
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+
+export default AddLibrary;

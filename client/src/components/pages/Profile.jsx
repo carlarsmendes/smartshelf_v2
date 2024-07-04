@@ -27,8 +27,6 @@ export default class Profile extends Component {
       expandedBooks: false,
       librariesToShow: 2,
       booksToShow: 2
-
-
     };
 
     this.calculateDueDate = this.calculateDueDate.bind(this);
@@ -46,7 +44,7 @@ export default class Profile extends Component {
     )
   }
   toggleShowBooks() {
-    console.log("WHAT IS THIS", this.state)
+    console.log("WHAT IS STATE", this.state)
     this.state.booksToShow === 2 ? (
       this.setState({ booksToShow: this.state.profileInfo.books.length, expandedBooks: true })
     ) : (
@@ -55,6 +53,7 @@ export default class Profile extends Component {
   }
 
   updateProfile = () => {
+    console.log("updateProfile");
     api
       .showProfile()
       .then(response => {
@@ -93,7 +92,7 @@ export default class Profile extends Component {
       return result;
     } 
     else{
-      return 0
+      return 0;
     }
   }
 
