@@ -1,5 +1,5 @@
   
-import React, { Component } from "react";
+import React, { useState, useEffect } from "react";
 import api from "../../api";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faBook,faComment, faExclamationTriangle,faArrowLeft} from '@fortawesome/free-solid-svg-icons'
@@ -11,70 +11,90 @@ import {
   CardBody,
   CardTitle,
   CardSubtitle,
-  Button,
-  // Row,
-  // Col,
-  // Container
+  Button
 } from "reactstrap";
-import Rating from '../Rating'
-import AddReview from "./AddReview"
+import Rating from '../Rating';
+import AddReview from "./AddReview";
 
-export default class BookDetail extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      response: {
-        user: null,
-        book: null
-      }
-    };
+import { useParams } from 'react-router-dom';
 
-    this.calculateDueDate = this.calculateDueDate.bind(this);
-    this.untilDueDate = this.untilDueDate.bind(this);
+const BookDetail = ({ props }) => {
+  
+  const[bookData, setBookData] = useState({
+    title: "",
+    author: "",
+    genre: "",
+    picture: "",
+    description: "",
+    rating: null,
+    pages: null,
+    language: "",
+    _currentOwner: null,
+    borrowedDate: null,
+    comments: [],
+    status: "",
+    showReviewForm: false
+  });
+
+  const[userData, setUserData] = useState({
+    username: "",
+    email: "",
+    favoriteBooks: "",
+    favoriteQuote: "",
+    password: "",
+    picture: "",
+    _id: null
+  });
+
+  const response = {
+    book : bookData,
+    user: userData
   }
 
-  borrowBook(event) {
+  const [message, setMessage] = useState(null);
+  const { bookId } = useParams();
+   
+//TODO: Add error handling
+  const borrowBook = (event) => {
     event.preventDefault();
     api
-      .updateBook(this.props.match.params.bookId, {
-        title: this.state.book.title,
-        author: this.state.book.author,
-        genre: this.state.book.genre,
-        picture: this.state.book.picture,
-        description: this.state.book.description,
-        rating: this.state.book.rating,
-        pages: this.state.book.pages,
-        language: this.state.book.language,
+      .updateBook(bookId, {
+        title: bookData.title,
+        author: bookData.author,
+        genre: bookData.genre,
+        picture: bookData.picture,
+        description: bookData.description,
+        rating: bookData.rating,
+        pages: bookData.pages,
+        language: bookData.language,
         _currentOwner: this.state.user._id,
         borrowedDate: Date.now(),
-        comments: this.state.book.comments,
+        comments: bookData.comments,
         status: "Unavailable",
         showReviewForm: false
       })
       .then(result => {
-        this.setState({
-          book: result.response,
-          message: `You borrowed '${this.state.book.title}'. You have ${this.untilDueDate()} days to give it back`
-        });
+        setBookData(result.response);
+        setMessage(`You borrowed '${bookData.title}'. You have ${untilDueDate()} days to give it back`);
       });
-  }
+  };
 
-  calculateDueDate(){
-    if(this.state.book)
+  //TODO: Fix calculation of due date
+  const calculateDueDate = () => {
+    if(bookData)
       {
-    let borrowedDate = this.state.book.borrowedDate ;
-    let deadlineDays=30 ;
+    let borrowedDate = bookData.borrowedDate ;
+    let deadlineDays = 30 ;
       var result = new Date(borrowedDate);
       result.setDate(result.getDate() + deadlineDays);
-          return result;} else{
-      return 0
-    }
-  }
+          return result;} 
+          else { return 0; }
+  };
 
-  untilDueDate(){ //currentDate as parameter?
-    if(this.state.book)
+  const untilDueDate = () => { //currentDate as parameter?
+    if(bookData)
       {
-     let dueDate = this.calculateDueDate();
+     let dueDate = calculateDueDate();
      let currentDate = Date.now();
      var oneDay = 1000 * 60 * 60 * 24;
 
@@ -85,73 +105,108 @@ export default class BookDetail extends Component {
 
      return Math.round(diffMS/oneDay)
       } else {return 0}
-  }
-  renderReviewForm  =() => {
-    this.setState({
-      showReviewForm: !this.state.showReviewForm
-    })
-  }
+  };
 
-  handleAddReview() {
-    this.componentDidMount()
-  }
+  const renderReviewForm  = () => {
+    setBookData({
+      showReviewForm: !bookData.showReviewForm
+    }); 
+  };
 
-  render() {
+  const handleAddReview = () => {
+    this.useEffect();
+  };
+
+  useEffect ( () => {
+      api
+        .getBook(bookId)
+        .then(response => {
+          const bookRes = response.response;
+          const userRes = response.user;
+          setBookData({ 
+            title: bookRes.title,
+            author: bookRes.author,
+            genre: bookRes.genre,
+            picture: bookRes.picture,
+            description: bookRes.description,
+            rating: bookRes.rating,
+            pages: bookRes.pages,
+            language: bookRes.language,
+            _currentOwner: userData._id,
+            comments: bookRes.comments,
+            status: bookRes.status,
+            showReviewForm: false,
+            borrowedDate: bookRes.borrowedDate,
+          })
+          setUserData({
+            username: userRes.username,
+            email: userRes.email,
+            favoriteBooks: userRes.favoriteBooks,
+            favoriteQuote: userRes.favoriteQuote,
+            password: userRes.password,
+            picture: userRes.picture
+          });
+          window.scrollTo(0, 0);
+        })
+        .catch(err => console.log(err));
+  }, [bookId, setBookData,userData._id]  );
+
+  // ----------------------
     return (
       <div className="BookDetail">
-        {!this.state.book && <div>Loading...</div>}
-        {this.state.book && (
+        {!bookData && <div>Loading...</div>}
+        {bookData && (
           <div className="bookCard">
             <Card>
             <CardBody>
            
                   <CardImg
                     body
-                    src={this.state.book.picture}
+                    src={bookData.picture}
                     alt="Card image cap"
                     style={{width:'100px',objectFit:'cover',marginBottom:'10px'}}
                   />
                 
                   <CardTitle className="text-center" tag="h4">
-                    <strong>{this.state.book.title}</strong>
+                    <strong>{bookData.title}</strong>
                   </CardTitle>
-                  <CardSubtitle  className="text-center" tag="h6"><i>by {this.state.book.author}</i></CardSubtitle>
+                  <CardSubtitle  className="text-center" tag="h6"><i>by {bookData.author}</i></CardSubtitle>
                   <CardText className="text-center">
                     
                     <strong>Rating: </strong>
-                    {this.state.book.rating}/5
+                    {bookData.rating}/5
                     <br />
                     <strong>Pages: </strong>
-                    {this.state.book.pages}
+                    {bookData.pages}
                     <br />
                     <strong>ISBN: </strong>
-                    {this.state.book.isbn}
+                    {bookData.isbn}
                     <br />
                     <strong>Genre: </strong>
-                    {this.state.book.genre}
+                    {bookData.genre}
                     
                   </CardText>
                    
-                  {this.state.book.description}
+                  {bookData.description}
                   <br />
-                  {this.state.book.status === "Available" && (
+                  {bookData.status === "Available" && (
                     <Button
-                      onClick={e => this.borrowBook(e)}
+                      onClick={e => borrowBook(e)}
                       outline
                       className="btn-yellow-fill"
                     >
                       <FontAwesomeIcon icon={faBook} size="1x" className="icon"/>{' '}borrow this book
                     </Button>
                   )}
-                  {this.state.book.status === "Unavailable" && 
+                  {bookData.status === "Unavailable" && 
                         <div><br /><Alert color="warning" >This book is not available at the moment - it has been borrowed.</Alert></div> }
                   <br />
-                  <Button onClick={this.renderReviewForm}
+                  <Button onClick={renderReviewForm}
                  className="btn-yellow-outline">
                   <FontAwesomeIcon icon={faComment} size="1x" className="icon"/>{' '}add a review</Button>
-                  {this.state.showReviewForm && 
-                  <AddReview onToggle={this.renderReviewForm} theInfo={this.state.response} onAddReview={() => this.handleAddReview()} />}
-                  <Button href={`/report-problem/${this.state.book._library}`} className="btn-problem" size="sm"
+                  {bookData.showReviewForm && 
+                  <AddReview onToggle={renderReviewForm} theInfo={response} onAddReview={() => handleAddReview()} />}
+                  <Button href={`/report-problem/${bookData._library}`} className="btn-problem" size="sm"
                   >
                   <FontAwesomeIcon icon={faExclamationTriangle} size="1x" className="icon"/>{' '}Report a problem
                   </Button>
@@ -159,8 +214,8 @@ export default class BookDetail extends Component {
                   <Button href={`/profile`} className="btn-yellow-fill">
                   <FontAwesomeIcon icon={faArrowLeft} size="1x" className="icon"/>{' '}Go Back
                   </Button><br />
-                  {this.state.message && (
-                    <div className="info">{this.state.message}</div>
+                  {message && (
+                    <div className="info">{message}</div>
                   )}
                 </CardBody>
             </Card>
@@ -168,8 +223,8 @@ export default class BookDetail extends Component {
             <Card className="reviewContainer">
               <CardBody>
               <CardTitle tag="h4">Reviews</CardTitle>
-                    {this.state.book.comments.length === 0 && <div>There are no reviews yet. <br/> Be the first to write one!</div>}
-                    {this.state.book.comments.map(comment => <li key={comment._id}>
+                    {bookData.comments && bookData.comments.length === 0 && <div>There are no reviews yet. <br/> Be the first to write one!</div>}
+                    {bookData.comments && bookData.comments.map(comment => <li key={comment._id}>
                       <Card>
                       <CardBody>
                       <CardTitle><Rating>{comment.rating}</Rating>{' '}<strong>"{comment.title}"</strong></CardTitle>
@@ -186,18 +241,6 @@ export default class BookDetail extends Component {
         )}
       </div>
     );
-  }
-  componentDidMount() {
-    api
-      .getBook(this.props.match.params.bookId)
-      .then(response => {
-        this.setState({
-          user: response.user,
-          book: response.response,
-          response:response
-        });
-        window.scrollTo(0, 0);
-      })
-      .catch(err => console.log(err));
-  }
-}
+};
+
+export default BookDetail;

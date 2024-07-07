@@ -54,9 +54,13 @@ Create a `.env` file in the `server` directory and add the following variables (
 MONGODB_URI=<your_mongodb_atlas_uri>
 SESSION_SECRET=anysessionsecret
 PORT=6000
+CLOUDINARY_NAME=yourcloudinaryname
+CLOUDINARY_KEY=yurcloudinarykey
+CLOUDINARY_SECRET=yourcloudinarysecret
 ```
 
 Note: Replace `<your_mongodb_atlas_uri>` with the connection string for your MongoDB Atlas cluster, without `<>`.
+Also, you will need to create a Cloudinary account.
 
 ### Database Configuration
 
@@ -78,7 +82,7 @@ The application uses MongoDB Atlas as the database. Make sure you have a MongoDB
 
 ## Testing
 
-The application uses Jest and Supertest for testing. To run the tests:
+The application uses Jest for testing. To run the tests:
 
 ```bash
 cd server
@@ -100,7 +104,7 @@ This will create an optimized production build in the `build` folder.
 
 ## Contributing
 
-If you would like to contribute to the project, please follow these steps:
+Eventually, when/if we will open for contributions, and you would like to contribute to the project, please follow these steps:
 
 1. Fork the repository
 2. Create a new branch for your feature or bug fix
