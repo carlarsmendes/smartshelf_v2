@@ -15,7 +15,7 @@ import {
   Container,
   Alert
 } from "reactstrap";
-import { NavLink as Nlink } from "react-router-dom";
+import { NavLink as Nlink, useNavigate } from "react-router-dom";
 import { useLocation } from 'react-router-dom'; // Import useLocation hook
 import { useParams } from 'react-router-dom';
 import EditLibrary from "../EditLibrary.js";
@@ -36,6 +36,7 @@ const LibraryDetail = ({ history }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { libraryId } = useParams(); // Destructure libraryId from useParams
 
+  const navigate = useNavigate();
 
       const toggleAlertLeaveLibrary = () => {
         setShowAlertLeaveLibrary(!showAlertLeaveLibrary);
@@ -85,8 +86,9 @@ const leaveLibrary = () => {
 };
 
 const deleteLibrary = () => {
+  
   api.deleteLibrary(libraryId)
-    .then(() => history.push('/profile'))
+    .then(() => navigate('/profile'))
     .catch(err => console.error(err));
 };
 

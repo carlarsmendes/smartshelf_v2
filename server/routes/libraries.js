@@ -71,14 +71,15 @@ router.delete('/:libraryId', isLoggedIn, (req, res, next) => {
     }
     else if(member.role === "admin"){
       Promise.all([
-        Library.findByIdAndRemove(req.params.libraryId),
+        Library.findByIdAndDelete(req.params.libraryId),
         Member.deleteMany({ _library: req.params.libraryId })
       ])
       .then(([library, deleteResult]) => {
         res.json({
           library,
           message: `The library was deleted with its ${deleteResult.deletedCount} member(s)!` 
-        })
+        });
+        console.log("res.json-->",res.json());
       })
     }
     else {
